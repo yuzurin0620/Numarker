@@ -1370,7 +1370,12 @@ function exportPNG() {
   if (!imageLoaded||!stage) return;
   const bounds = computeAnnotationBounds();
   if (bounds.hasOut) {
-    if (bgColor !== 'transparent' && bgColor !== '#ffffff') {
+    if (bgColor === 'transparent') {
+      document.querySelector('input[name="export-bg"][value="transparent"]').checked = true;
+    } else if (bgColor === '#ffffff') {
+      document.querySelector('input[name="export-bg"][value="white"]').checked = true;
+    } else {
+      document.querySelector('input[name="export-bg"][value="custom"]').checked = true;
       document.getElementById('export-custom-color').value = bgColor;
     }
     document.getElementById('export-panel').classList.remove('hidden');
