@@ -32,7 +32,9 @@ Noteタブを開きます。 <br>
 # 各ツール  <br> 
 
 ### 数字ツール <br> 
-<img width="508" height="1436" alt="Image" src="https://github.com/user-attachments/assets/c427b6fd-442f-490e-bd47-1d0f748e49b4" /> <br> 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/c427b6fd-442f-490e-bd47-1d0f748e49b4" alt="Image" width="300px">
+</p> <br> 
 1. Color <br> 
 色を設定します。 <br>  <br> 
 2. プレビュー <br> 
@@ -47,7 +49,9 @@ Noteタブを開きます。 <br>
 数字アノテーションの大きさを設定します。大きさはAlt+スクロールでも変更できます。 <br>  <br>
 
 ### 矩形ツール <br> 
-<img width="478" height="1318" alt="Image" src="https://github.com/user-attachments/assets/f5169988-dd43-4e09-b3cc-2c3080db0ab6" /> <br> 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/f5169988-dd43-4e09-b3cc-2c3080db0ab6" alt="Image" width="300px">
+</p><br> 
 1. Color <br> 
 色を設定します。 <br>  <br> 
 2. プレビュー <br> 
@@ -64,7 +68,9 @@ Noteタブを開きます。 <br>
 矩形の枠の幅を設定します。 <br>  <br>
 
 ### 矢印ツール
-<img width="487" height="1234" alt="Image" src="https://github.com/user-attachments/assets/3bb67040-a1de-424c-bb31-d55c10cea2e4" /> <br> 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/3bb67040-a1de-424c-bb31-d55c10cea2e4" alt="Image" width="300px">
+</p> <br> 
 1. Color <br> 
 色を設定します。 <br>  <br> 
 2. プレビュー <br> 
@@ -79,7 +85,9 @@ Noteタブを開きます。 <br>
 矢印アノテーションの線幅を設定します。 <br>  <br>
 
 ### 選択ツール
-<img width="616" height="1880" alt="Image" src="https://github.com/user-attachments/assets/e8cb339e-6084-4e45-8c10-172c1d3c28b9" /> <br> 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/e8cb339e-6084-4e45-8c10-172c1d3c28b9" alt="Image" width="300px">
+</p> <br> 
 1. 全選択 <br> 
 キャンバス内の全アノテーションを選択します。 <br>  <br> 
 2. 選択解除 <br> 
@@ -107,7 +115,9 @@ Noteタブを開きます。 <br>
 選択しているアノテーションを削除します。 <br>  <br>
 
 ### Note
-<img width="657" height="1279" alt="Image" src="https://github.com/user-attachments/assets/107ee17a-1cb6-463b-b51d-858de6bd1a5e" /> <br> 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/107ee17a-1cb6-463b-b51d-858de6bd1a5e" alt="Image" width="300px">
+</p> <br> 
 1. ソート <br> 
 数字アノテーションの並び替えを行います。 <br> 
 ・番号 昇順 <br> 
