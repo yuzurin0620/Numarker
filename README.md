@@ -1,3 +1,16 @@
+# Numarker
+
+画像に数字入れ・注釈・マーキングができるWebアプリ <br>
+
+👉 https://yuzurin0620.github.io/Numarker/ <br>
+
+##  Features
+- 数字スタンプ
+- 矢印・四角描画
+- 整列・等間隔配置
+- 数字に対応したテキスト出力
+- JSON保存/読込
+
 # 全体UI
 <img width="3894" height="2236" alt="Image" src="https://github.com/user-attachments/assets/31720b6f-93d4-4d3f-a382-8aa47148bf66" /> <br> 
 1. キャンバス <br> 
