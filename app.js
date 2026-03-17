@@ -501,7 +501,7 @@ function updateSelectionVisual() {
     if (c.name() !== 'arrow-handle') {
       const p = c.getParent(); const pann = p ? findAnn(p.id()) : null;
       if (pann?.style === 'circle-outline') return;
-      c.stroke(null); c.strokeWidth(0);
+      c.stroke(null); c.strokeWidth(0); c.shadowEnabled(false);
     }
   });
   annotationLayer.find('Rect').forEach(r => { r.dash([]); r.shadowEnabled(false); if(r.name()==='shape'){r.stroke(null);r.strokeWidth(0);} });
@@ -515,8 +515,11 @@ function updateSelectionVisual() {
     if (ann.type === 'number') {
       const shape = node.findOne('.shape');
       if (shape) {
-        shape.stroke(ann.style === 'circle-outline' ? ann.color : '#fff');
-        shape.strokeWidth(ann.style === 'circle-outline' ? 3.5 : 2.5);
+        shape.stroke('#facc15');
+        shape.strokeWidth(3);
+        shape.shadowColor('rgba(0,0,0,0.85)');
+        shape.shadowBlur(5);
+        shape.shadowEnabled(true);
       }
     } else if (ann.type === 'rect') {
       node.dash([6,3]); node.shadowColor('#ef4444'); node.shadowBlur(8); node.shadowEnabled(true);
@@ -558,7 +561,7 @@ function deselectAll() {
     if (c.name() !== 'arrow-handle') {
       const p = c.getParent(); const pann = p ? findAnn(p.id()) : null;
       if (pann?.style === 'circle-outline') return;
-      c.stroke(null); c.strokeWidth(0);
+      c.stroke(null); c.strokeWidth(0); c.shadowEnabled(false);
     }
   });
   annotationLayer.find('Rect').forEach(r => { r.dash([]); r.shadowEnabled(false); if(r.name()==='shape'){r.stroke(null);r.strokeWidth(0);} });
@@ -1186,7 +1189,7 @@ function renumber() {
   } else {
     let startNum;
     if (mode === 'from1') startNum = 1;
-    else if (mode === 'min') startNum = allNums.length ? Math.min(...allNums.map(a=>parseInt(a.num)||1)) : 1;
+    else if (mode === 'min') startNum = scope.length ? Math.min(...scope.map(a=>parseInt(a.num)||1)) : 1;
     scope.sort((a,b)=>(parseInt(a.num)||0)-(parseInt(b.num)||0));
     scope.forEach((ann,i) => { ann.num = startNum + i; });
   }
