@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Numarker</title>
+<script src="https://unpkg.com/konva@9/konva.min.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="header">
+  <span class="logo">Numarker</span>
+  <div class="divider"></div>
+  <button class="btn" id="btn-undo" title="Undo (Ctrl+Z)">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 10h11a5 5 0 0 1 0 10H7"/><polyline points="3 10 7 6 3 14 7 18 3 14"/></svg>Undo
+  </button>
+  <button class="btn" id="btn-redo" title="Redo (Ctrl+Y / Shift+Ctrl+Z)">
+    Redo<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 10H10a5 5 0 0 0 0 10h7"/><polyline points="21 10 17 6 21 14 17 18 21 14"/></svg>
+  </button>
+  <div class="divider"></div>
+  <div id="zoom-controls">
+    <button class="btn" id="btn-zoom-out" style="padding:4px 8px;" title="Zoom out">−</button>
+    <input type="range" id="zoom-slider" min="10" max="400" value="100" step="1">
+    <button class="btn" id="btn-zoom-in" style="padding:4px 8px;" title="Zoom in">+</button>
+    <span id="zoom-label">100%</span>
+  </div>
+  <div class="spacer"></div>
+  <button class="btn secondary-light" id="btn-load-json">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>JSON読込
+  </button>
+  <button class="btn primary-light" id="btn-save-json">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>JSON保存
+  </button>
+  <input type="file" id="json-file-input" accept=".json" style="display:none">
+  <div class="divider"></div>
+  <button class="btn secondary" id="btn-open">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>画像を開く
+  </button>
+  <input type="file" id="file-input" accept="image/*" style="display:none">
+  <button class="btn primary" id="btn-export">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>PNG保存
+  </button>
+</div>
+
+<div id="main">
+  <div id="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Tools</div>
+      <div id="tools">
+        <div class="tool-btn active" data-tool="select" title="Select (V)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4l7 18 3-7 7-3z"/></svg><span>Select</span>
+        </div>
+        <div class="tool-btn" data-tool="number" title="Number (N)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="currentColor" stroke="none" font-weight="bold">N</text></svg><span>Number</span>
+        </div>
+        <div class="tool-btn" data-tool="rect" title="Rectangle (R)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1"/></svg><span>Rect</span>
+        </div>
+        <div class="tool-btn" data-tool="arrow" title="Arrow (A)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9 5 19 5 19 15"/></svg><span>Arrow</span>
+        </div>
+      </div>
+      <div id="sel-btns">
+        <button class="btn" id="btn-select-all" style="flex:1;font-size:11px;padding:4px;">全選択</button>
+        <button class="btn" id="btn-deselect-all" style="flex:1;font-size:11px;padding:4px;">選択解除</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="color-section">
+      <div class="sidebar-label">Color</div>
+      <div id="color-type-tabs">
+        <div class="color-type-tab active" data-type="number" title="数字の色">
+          <div class="color-dot" id="dot-number" style="width:9px;height:9px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><text x="12" y="16" text-anchor="middle" font-size="10" fill="currentColor" stroke="none" font-weight="bold">1</text></svg>
+        </div>
+        <div class="color-type-tab" data-type="rect" title="矩形の色">
+          <div class="color-dot" id="dot-rect" style="width:9px;height:9px;border-radius:2px;background:#ef4444;flex-shrink:0;"></div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="6" width="18" height="12" rx="1"/></svg>
+        </div>
+        <div class="color-type-tab" data-type="arrow" title="矢印の色">
+          <div class="color-dot" id="dot-arrow" style="width:9px;height:9px;border-radius:2px;background:#ef4444;flex-shrink:0;"></div>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="19" x2="19" y2="5"/><polyline points="9 5 19 5 19 15"/></svg>
+        </div>
+      </div>
+      <div id="color-palette"></div>
+      <input type="color" id="custom-color" value="#ef4444" title="Custom color" style="width:100%;height:28px;border-radius:5px;border:1px solid #374151;background:#111827;cursor:pointer;padding:2px;margin-top:6px;">
+    </div>
+
+    <div class="sidebar-section" id="stamp-section">
+      <div id="num-stamp-content">
+        <div class="sidebar-label">Number Stamp</div>
+        <div id="stamp-area">
+          <div id="stamp-badge-wrap">
+            <div id="stamp-badge" draggable="true">1</div>
+          </div>
+          <div id="stamp-controls">
+            <div class="num-adj" id="btn-minus">−</div>
+            <input type="text" id="next-num-input" value="1" maxlength="4">
+            <div class="num-adj" id="btn-plus">+</div>
+          </div>
+        </div>
+        <button class="btn" id="btn-next-auto" style="width:100%;font-size:11px;padding:4px;margin-top:6px;" title="次の番号を最大値+1にセット">次番号を揃える</button>
+        <div class="sidebar-label" style="margin-top:10px;">Style</div>
+        <div id="style-selector">
+          <div class="style-btn active" data-style="circle" title="Circle">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#ef4444"/></svg>
+          </div>
+          <div class="style-btn" data-style="square" title="Square">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444"/></svg>
+          </div>
+          <div class="style-btn" data-style="circle-outline" title="Circle Outline">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#ef4444" stroke-width="2.5"/></svg>
+          </div>
+          <div class="style-btn" data-style="rounded-square" title="Rounded Square">
+            <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="#ef4444"/></svg>
+          </div>
+          <div class="style-btn" data-style="diamond" title="Diamond">
+            <svg viewBox="0 0 24 24"><polygon points="12,3 21,12 12,21 3,12" fill="#ef4444"/></svg>
+          </div>
+        </div>
+      </div>
+      <div id="rect-preview-content" style="display:none">
+        <div class="sidebar-label">Rectangle Preview</div>
+        <div style="display:flex;justify-content:center;padding:8px 0 4px">
+          <svg id="rect-preview-svg" viewBox="0 0 80 60" width="80" height="60"></svg>
+        </div>
+      </div>
+      <div id="arrow-preview-content" style="display:none">
+        <div class="sidebar-label">Arrow Preview</div>
+        <div style="display:flex;justify-content:center;padding:8px 0 4px">
+          <svg id="arrow-preview-svg" viewBox="0 0 80 60" width="80" height="60"></svg>
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar-section" id="props-section">
+      <div class="sidebar-label">Properties</div>
+      <div id="props-panel">
+        <div class="prop-row" id="prop-num-row" style="display:none">
+          <div class="prop-label">Number</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <div class="num-adj" id="prop-num-minus">−</div>
+            <input type="text" class="prop-input" id="prop-num-input" maxlength="4" style="flex:1;text-align:center;">
+            <div class="num-adj" id="prop-num-plus">+</div>
+          </div>
+        </div>
+        <div class="prop-row" id="prop-size-row" style="display:none">
+          <div class="prop-label">Size: <span id="prop-size-val">20</span>px</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="range" id="prop-size" min="6" max="100" value="20" style="flex:1;">
+            <input type="number" id="prop-size-num" min="6" max="100" value="20" class="num-input">
+          </div>
+        </div>
+        <div class="prop-row" id="prop-style-row" style="display:none">
+          <div class="prop-label">Shape</div>
+          <div id="prop-style-selector" style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;">
+            <div class="style-btn" data-style="circle" title="Circle"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="#ef4444"/></svg></div>
+            <div class="style-btn" data-style="square" title="Square"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" fill="#ef4444"/></svg></div>
+            <div class="style-btn" data-style="circle-outline" title="Circle Outline"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#ef4444" stroke-width="2.5"/></svg></div>
+            <div class="style-btn" data-style="rounded-square" title="Rounded Square"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="#ef4444"/></svg></div>
+            <div class="style-btn" data-style="diamond" title="Diamond"><svg viewBox="0 0 24 24"><polygon points="12,3 21,12 12,21 3,12" fill="#ef4444"/></svg></div>
+          </div>
+        </div>
+        <div class="prop-row" id="prop-fill-opacity-row" style="display:none">
+          <div class="prop-label">塗りつぶし: <span id="prop-fill-opacity-val">25</span>%</div>
+          <input type="range" id="prop-fill-opacity" min="0" max="100" value="25" step="5">
+        </div>
+        <div class="prop-row" id="prop-fill-hatch-row" style="display:none">
+          <div class="prop-label">Fill style</div>
+          <div class="toggle-row">
+            <div class="toggle-btn active" id="fill-solid-btn">Solid</div>
+            <div class="toggle-btn" id="fill-hatch-btn">Hatch</div>
+          </div>
+        </div>
+        <div class="prop-row" id="prop-rect-stroke-row" style="display:none">
+          <div class="prop-label">線幅(Rect): <span id="prop-rect-stroke-val">3</span>px</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="range" id="prop-rect-stroke" min="1" max="20" value="3" style="flex:1;">
+            <input type="number" id="prop-rect-stroke-num" min="1" max="20" value="3" class="num-input">
+          </div>
+        </div>
+        <div class="prop-row" id="prop-arrow-type-row" style="display:none">
+          <div class="prop-label">Arrow type</div>
+          <div class="toggle-row">
+            <div class="toggle-btn active" id="arrow-type-arrow-btn">Arrow</div>
+            <div class="toggle-btn" id="arrow-type-line-btn">Line</div>
+          </div>
+        </div>
+        <div class="prop-row" id="prop-arrow-stroke-row" style="display:none">
+          <div class="prop-label">線幅(Arrow): <span id="prop-arrow-stroke-val">3</span>px</div>
+          <div style="display:flex;align-items:center;gap:4px;">
+            <input type="range" id="prop-arrow-stroke" min="1" max="20" value="3" style="flex:1;">
+            <input type="number" id="prop-arrow-stroke-num" min="1" max="20" value="3" class="num-input">
+          </div>
+        </div>
+        <div class="prop-row" id="prop-align-row" style="display:none">
+          <div class="prop-label">整列</div>
+          <div class="align-layout">
+            <div class="align-cross">
+              <div></div>
+              <button class="align-btn icon-btn" data-align="top" title="上" aria-label="上">
+                <img src="icons/top-arrow-to-top-svgrepo-com.svg" alt="">
+              </button>
+              <div></div>
+              <button class="align-btn icon-btn" data-align="left" title="左" aria-label="左">
+                <img src="icons/left-arrow-to-left-svgrepo-com.svg" alt="">
+              </button>
+              <div class="align-center-empty"></div>
+              <button class="align-btn icon-btn" data-align="right" title="右" aria-label="右">
+                <img src="icons/arrow-to-right-svgrepo-com.svg" alt="">
+              </button>
+              <div></div>
+              <button class="align-btn icon-btn" data-align="bottom" title="下" aria-label="下">
+                <img src="icons/arrow-to-bottom-svgrepo-com.svg" alt="">
+              </button>
+              <div></div>
+            </div>
+            <div class="align-actions">
+              <button class="align-btn icon-btn" data-align="center-v" title="垂直整列" aria-label="垂直整列">
+                <img src="icons/vertical-align-center-svgrepo-com.svg" alt="">
+              </button>
+              <button class="align-btn icon-btn" data-align="center-h" title="水平整列" aria-label="水平整列">
+                <img src="icons/horizontal-align-center-svgrepo-com.svg" alt="">
+              </button>
+              <button class="align-btn icon-btn" data-align="distribute-v" title="垂直等間隔" aria-label="垂直等間隔">
+                <img src="icons/arrows-shrink-v-svgrepo-com.svg" alt="">
+              </button>
+              <button class="align-btn icon-btn" data-align="distribute-h" title="水平等間隔" aria-label="水平等間隔">
+                <img src="icons/arrows-shrink-h-svgrepo-com.svg" alt="">
+              </button>
+            </div>
+          </div>
+        </div>
+        <button id="btn-delete" style="display:none">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="canvas-wrapper">
+    <div id="canvas-toolbar">
+      <span style="color:#9ca3af;">拡張背景:</span>
+      <select id="bg-color-select">
+        <option value="transparent">透明</option>
+        <option value="#ffffff">白</option>
+        <option value="custom">カスタム</option>
+      </select>
+      <input type="color" id="bg-custom-color" value="#ffffff" style="height:24px;width:36px;border-radius:4px;border:1px solid #374151;cursor:pointer;display:none;padding:1px;">
+      <div class="divider" style="width:1px;height:18px;background:#374151;margin:0 2px;"></div>
+      <span style="color:#9ca3af;">再ナンバリング:</span>
+      <select id="renumber-mode">
+        <option value="from1">1から</option>
+        <option value="min">最小値から</option>
+        <option value="max-down">最大値から</option>
+      </select>
+      <button class="btn" id="btn-renumber" style="padding:4px 10px;font-size:12px;">実行</button>
+      <span id="renumber-scope-hint" style="font-size:11px;color:#6b7280;"></span>
+      <div style="flex:1;"></div>
+      <button class="btn" id="btn-toggle-notes" title="Notes パネル切替">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="8" y1="9" x2="16" y2="9"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>Notes
+      </button>
+    </div>
+    <div id="canvas-area">
+      <div id="drop-hint">
+        <div class="hint-icon">🖼️</div>
+        <div class="hint-text">Drop an image here<br>or use 画像を開く / Ctrl+V</div>
+      </div>
+      <div id="canvas-pan-pad"><div id="konva-container"></div></div>
+    </div>
+  </div>
+
+  <div id="notes-panel" class="hidden">
+    <div id="notes-resize-handle"></div>
+    <div id="notes-header">
+      <span class="notes-title">Notes</span>
+      <select id="notes-sort">
+        <option value="asc">番号 昇順</option>
+        <option value="desc">番号 降順</option>
+        <option value="style-asc">スタイル→昇順</option>
+        <option value="style-desc">スタイル→降順</option>
+      </select>
+      <button class="btn" id="btn-copy-notes" style="padding:3px 9px;font-size:12px;">コピー</button>
+    </div>
+    <div id="notes-body">
+      <div id="notes-empty">番号アノテーションがありません</div>
+    </div>
+  </div>
+</div>
+
+<div id="stamp-ghost"></div>
+
+<div id="export-panel" class="hidden">
+  <div class="modal-title">PNG保存</div>
+  <div class="modal-body">アノテーションが画像の外に出ています。背景色を選択してください。</div>
+  <div class="modal-options">
+    <label class="modal-option"><input type="radio" name="export-bg" value="transparent" checked> 透明</label>
+    <label class="modal-option"><input type="radio" name="export-bg" value="white"> 白</label>
+    <label class="modal-option"><input type="radio" name="export-bg" value="custom"> カスタム <input type="color" id="export-custom-color" value="#ffffff" style="margin-left:6px;height:22px;width:50px;border-radius:4px;border:1px solid #374151;cursor:pointer;"></label>
+  </div>
+  <div class="modal-footer">
+    <button class="btn" id="export-cancel-btn">キャンセル</button>
+    <button class="btn primary" id="export-save-btn">保存</button>
+  </div>
+</div>
+
+<script src="app.js" defer></script>
+</body>
+</html>
