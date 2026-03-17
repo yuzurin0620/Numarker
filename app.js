@@ -40,6 +40,7 @@ let isPanning = false, panStartX = 0, panStartY = 0, panScrollLeft = 0, panScrol
 // Cursor ghost for number tool
 let cursorGhost = null;
 let cursorGhostNeedsRebuild = true;
+let lastStagePointer = null;
 
 // Internal clipboard for copy/paste
 let clipboard = [];
@@ -791,6 +792,7 @@ function onStageDown(e) {
 
 function onStageMove(e) {
   const sp = getStagePointer();
+  lastStagePointer = sp;
 
   // Cursor ghost for number tool
   updateCursorGhost(sp);
@@ -939,6 +941,7 @@ function updateRectArrowPreview() {
 // ─── Cursor Ghost (Number Tool) ───────────────────────────────────────────────
 function invalidateCursorGhost() {
   cursorGhostNeedsRebuild = true;
+  if (lastStagePointer) updateCursorGhost(lastStagePointer);
 }
 
 function updateCursorGhost(sp) {
@@ -1467,13 +1470,43 @@ document.addEventListener('mouseup', e=>{
 canvasArea.addEventListener('wheel', e=>{
   if (!imageLoaded) return;
   e.preventDefault();
+  if (e.altKey) {
+    const delta = e.deltaY > 0 ? -1 : 1;
+    if (selectedIds.size > 0) {
+      let changed = false;
+      selectedIds.forEach(id=>{
+        const ann=findAnn(id);
+        if(ann&&ann.type==='number'){
+          ann.radius=Math.max(6,Math.min(100,ann.radius+delta));
+          changed=true;
+        }
+      });
+      if(changed){
+        renderAnnotations();
+        updateStampBadge();
+        const firstNum=[...selectedIds].map(id=>findAnn(id)).find(a=>a&&a.type==='number');
+        if(firstNum){
+          document.getElementById('prop-size').value=firstNum.radius;
+          document.getElementById('prop-size-val').textContent=firstNum.radius;
+          document.getElementById('prop-size-num').value=firstNum.radius;
+        }
+      }
+    } else {
+      defaultRadius=Math.max(6,Math.min(100,defaultRadius+delta));
+      document.getElementById('prop-size').value=defaultRadius;
+      document.getElementById('prop-size-val').textContent=defaultRadius;
+      document.getElementById('prop-size-num').value=defaultRadius;
+      updateStampBadge();
+    }
+    return;
+  }
   const PAD_PX = 500;
   const rect = canvasArea.getBoundingClientRect();
   const mouseX = e.clientX - rect.left + canvasArea.scrollLeft;
   const mouseY = e.clientY - rect.top + canvasArea.scrollTop;
   const oldScale = viewScale;
-  const delta = e.deltaY > 0 ? -0.1 : 0.1;
-  setZoom(viewScale + delta);
+  const delta2 = e.deltaY > 0 ? -0.1 : 0.1;
+  setZoom(viewScale + delta2);
   const ratio = viewScale / oldScale;
   canvasArea.scrollLeft = mouseX * ratio + PAD_PX * (1 - ratio) - (e.clientX - rect.left);
   canvasArea.scrollTop = mouseY * ratio + PAD_PX * (1 - ratio) - (e.clientY - rect.top);
