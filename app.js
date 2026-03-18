@@ -218,6 +218,8 @@ function showArrowHandles(ann) {
     const h = new Konva.Circle({ x, y, radius: 7, fill: 'white', stroke: '#ef4444', strokeWidth: 2, draggable: true, name: 'arrow-handle' });
     h.on('click tap', e => e.cancelBubble = true);
     h.on('dragmove', () => {
+      const sw = baseStageW + 2 * STAGE_PAD, sh = baseStageH + 2 * STAGE_PAD;
+      h.x(Math.max(0, Math.min(sw, h.x()))); h.y(Math.max(0, Math.min(sh, h.y())));
       ann.points[idx*2] = h.x() - STAGE_PAD; ann.points[idx*2+1] = h.y() - STAGE_PAD;
       const n = annotationLayer.findOne('#' + ann.id);
       if (n) n.points([ann.points[0]+STAGE_PAD, ann.points[1]+STAGE_PAD, ann.points[2]+STAGE_PAD, ann.points[3]+STAGE_PAD]);
@@ -334,6 +336,20 @@ function toggleEdgeSelection(annId, dir) {
 
 
 // ─── createNode ───────────────────────────────────────────────────────────────
+function clampNodePos(nx, ny, ann) {
+  const sw = baseStageW + 2 * STAGE_PAD, sh = baseStageH + 2 * STAGE_PAD;
+  if (!ann) return { x: nx, y: ny };
+  if (ann.type === 'number') {
+    const r = ann.radius || 20;
+    return { x: Math.max(r, Math.min(sw - r, nx)), y: Math.max(r, Math.min(sh - r, ny)) };
+  }
+  if (ann.type === 'rect') {
+    const w = ann.width || 0, h = ann.height || 0;
+    return { x: Math.max(0, Math.min(sw - w, nx)), y: Math.max(0, Math.min(sh - h, ny)) };
+  }
+  return { x: nx, y: ny };
+}
+
 function makeDragHandlers(ann, node) {
   node.on('dragstart', () => {
     if (activeTool !== 'select') { node.stopDrag(); return; }
@@ -360,7 +376,7 @@ function makeDragHandlers(ann, node) {
     selectedIds.forEach(id => {
       if (id === ann.id) return;
       const n = annotationLayer.findOne('#' + id), s = multiDragStartPos[id];
-      if (n && s) { n.x(s.x + dx); n.y(s.y + dy); }
+      if (n && s) { const c = clampNodePos(s.x + dx, s.y + dy, findAnn(id)); n.x(c.x); n.y(c.y); }
     });
     annotationLayer.batchDraw();
     if (bgColor !== 'transparent' && imageLoaded) {
@@ -415,7 +431,8 @@ function createNode(ann) {
     const fsize = r * (numStr.length > 2 ? 0.7 : numStr.length > 1 ? 0.85 : 1.1);
     const isOutline = style === 'circle-outline';
     const tColor = isOutline ? ann.color : textColor(ann.color);
-    const group = new Konva.Group({ id: ann.id, x: ann.x + STAGE_PAD, y: ann.y + STAGE_PAD, draggable: true });
+    const group = new Konva.Group({ id: ann.id, x: ann.x + STAGE_PAD, y: ann.y + STAGE_PAD, draggable: true,
+      dragBoundFunc: function(pos) { return clampNodePos(pos.x, pos.y, ann); } });
     let shape;
     if (style === 'circle') {
       shape = new Konva.Circle({ x:0,y:0,radius:r,fill:ann.color,name:'shape' });
@@ -452,7 +469,8 @@ function createNode(ann) {
       id: ann.id, x: ann.x + STAGE_PAD, y: ann.y + STAGE_PAD,
       width: ann.width, height: ann.height,
       stroke: ann.color, strokeWidth: ann.strokeWidth || defaultRectStroke,
-      draggable: true, ...fillConfig
+      draggable: true, ...fillConfig,
+      dragBoundFunc: function(pos) { return clampNodePos(pos.x, pos.y, ann); }
     });
     makeDragHandlers(ann, rect);
     return rect;
@@ -1047,7 +1065,7 @@ function setColor(color) {
       const ann = findAnn(id);
       if (ann && (applyAll || ann.type === activeColorType)) { ann.color = color; changed = true; }
     });
-    if (changed) { saveHistory(); renderAnnotations(); updatePropsPanel(); }
+    if (changed) { saveHistory(); renderAnnotations(); renderNotesPanel(); updatePropsPanel(); }
   }
 }
 
@@ -1578,7 +1596,7 @@ function applyNumStyle(style) {
   if (selectedIds.size > 0) {
     let changed = false;
     selectedIds.forEach(id => { const ann = findAnn(id); if (ann && ann.type === 'number') { ann.style = style; changed = true; } });
-    if (changed) { saveHistory(); renderAnnotations(); }
+    if (changed) { saveHistory(); renderAnnotations(); renderNotesPanel(); }
   }
   updatePropsPanel();
 }
